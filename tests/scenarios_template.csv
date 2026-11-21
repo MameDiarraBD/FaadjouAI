@@ -1,0 +1,9 @@
+id,texte_fr,audio_wolof_optionnel,specialite_attendue,urgence_attendue
+sc_001,J'ai mal à la gorge depuis trois jours et un peu de fièvre.,,orl,faible
+sc_002,Douleur thoracique soudaine avec essoufflement.,,urgences,vitale
+sc_003,Éruption cutanée qui démange sur les bras.,,dermatologie,faible
+sc_004,Mon enfant de 2 ans a de la diarrhée et vomit depuis hier.,,pediatrie,moyenne
+sc_005,Perte de connaissance puis réveil confus.,,urgences,vitale
+sc_006,Toux sèche persistante depuis deux semaines sans fièvre.,,pneumologie,faible
+sc_007,Douleurs abdominales après les repas et ballonnements.,,gastro_enterologie,faible
+sc_008,Saignement abondant qui ne s'arrête pas après une blessure.,,urgences,vitale

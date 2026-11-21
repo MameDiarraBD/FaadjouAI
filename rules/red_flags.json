@@ -1,0 +1,57 @@
+{
+  "_avertissement": "NON VALIDÉE - À FAIRE RELIRE PAR UN MÉDECIN",
+  "_usage": "Signaux d'alarme explicites. Si un motif apparaît dans le texte français OU dans la sortie du modèle, urgence forcée à 'vitale' et spécialité 'urgences'. Le modèle ne décide jamais seul d'un cas grave.",
+  "_reponse_urgence": "Composer le numéro d'urgence configuré dans configs/config.yaml (triage.emergency_phone). Valeur actuelle à renseigner avant toute démo publique.",
+  "red_flags": [
+    {
+      "id": "rf_douleur_thoracique",
+      "motifs": ["douleur thoracique", "douleur dans la poitrine", "serrement poitrine", "oppression thoracique"],
+      "raison": "Suspicion d'urgence cardio-vasculaire — orientation uniquement"
+    },
+    {
+      "id": "rf_difficulte_respiratoire",
+      "motifs": ["ne peut plus respirer", "essoufflement sévère", "détresse respiratoire", "asphyxie", "cyanose"],
+      "raison": "Détresse respiratoire — orientation uniquement"
+    },
+    {
+      "id": "rf_perte_connaissance",
+      "motifs": ["perte de connaissance", "évanouissement", "inconscient", "coma", "ne répond plus"],
+      "raison": "Altération de conscience — orientation uniquement"
+    },
+    {
+      "id": "rf_saignement_abondant",
+      "motifs": ["saignement abondant", "hémorragie", "sang qui ne s'arrête pas", "hémoptysie massive"],
+      "raison": "Hémorragie — orientation uniquement"
+    },
+    {
+      "id": "rf_avc_suspect",
+      "motifs": ["paralysie soudaine", "visage asymétrique", "difficulté à parler soudaine", "faiblesse d'un côté"],
+      "raison": "Signes évocateurs d'AVC — orientation uniquement"
+    },
+    {
+      "id": "rf_convulsions",
+      "motifs": ["convulsions", "crise d'épilepsie", "se convulse"],
+      "raison": "Convulsions — orientation uniquement"
+    },
+    {
+      "id": "rf_grossesse_urgence",
+      "motifs": ["saignement de grossesse", "contractions violentes", "eau cassée avec fièvre", "douleur abdominale grossesse"],
+      "raison": "Urgence obstétricale possible — orientation uniquement"
+    },
+    {
+      "id": "rf_enfant_lethargique",
+      "motifs": ["bébé ne réagit plus", "enfant léthargique", "fontanelle bombée", "refus de boire total"],
+      "raison": "Urgence pédiatrique possible — orientation uniquement"
+    },
+    {
+      "id": "rf_intoxication",
+      "motifs": ["ingestion de produit toxique", "empoisonnement", "surdosage", "intoxication"],
+      "raison": "Intoxication — orientation uniquement"
+    },
+    {
+      "id": "rf_meningisme",
+      "motifs": ["raideur de la nuque", "fièvre avec confusion", "photophobie intense avec fièvre"],
+      "raison": "Suspicion d'infection sévère du SNC — orientation uniquement"
+    }
+  ]
+}

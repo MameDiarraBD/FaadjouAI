@@ -1,0 +1,50 @@
+# Données et artefacts (ne jamais versionner)
+data/**
+!data/**/
+!data/**/README.md
+!data/**/.gitkeep
+results/**
+!results/.gitkeep
+checkpoints/
+*.wav
+*.mp3
+*.flac
+
+
+# Secrets et environnement
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Jupyter / Colab
+.ipynb_checkpoints/
+*.ipynb
+!notebooks/*.ipynb
+
+# Caches locaux (météo Sentinelle, Hugging Face)
+.cache/
+cache/
+weather_cache/
+*.log

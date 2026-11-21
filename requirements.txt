@@ -1,0 +1,28 @@
+# torch n'est PAS épinglé : Google Colab le fournit déjà (GPU T4).
+# En local : installer torch séparément selon votre CUDA/CPU
+# (voir https://pytorch.org/get-started/locally/).
+
+transformers==4.46.3
+datasets==3.1.0
+accelerate==1.1.1
+evaluate==0.4.3
+jiwer==3.0.5
+librosa==0.10.2.post1
+soundfile==0.12.1
+pandas==2.2.3
+numpy==1.26.4
+pyyaml==6.0.2
+jsonschema==4.23.0
+fastapi==0.115.5
+uvicorn==0.32.1
+python-multipart==0.0.17
+requests==2.32.3
+matplotlib==3.9.2
+pytest==8.3.3
+bitsandbytes==0.44.1
+peft==0.13.2
+huggingface_hub==0.26.2
+tqdm==4.67.0
+scikit-learn==1.5.2
+scipy==1.14.1
+streamlit>=1.40.0

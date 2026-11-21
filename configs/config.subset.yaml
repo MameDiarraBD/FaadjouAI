@@ -1,0 +1,169 @@
+# Paquet data/subset uniquement. Ne pointe PAS vers les corpus de plusieurs Go.
+# =============================================================================
+# Faadjou AI — configuration centrale
+# POURQUOI un seul YAML : jury et reproductibilité. Tous les hyperparamètres
+# et chemins sont ici, pas dans le code, pour pouvoir changer sans toucher
+# aux scripts (et documenter chaque choix).
+# =============================================================================
+
+project:
+  name: faadjou-ai
+  seed: 42  # graine unique : splits, simulation Sentinelle, reproductibilité
+
+paths:
+  results_dir: results
+  checkpoints_dir: checkpoints  # sur Colab : monter Drive et pointer ici
+  rules_dir: rules
+  weather_cache_dir: data/weather_cache
+  specialites_file: rules/specialites.json
+  red_flags_file: rules/red_flags.json
+  scenarios_file: tests/scenarios.csv
+  scenarios_template: tests/scenarios_template.csv
+
+# -----------------------------------------------------------------------------
+# Module 1 — données audio ASR
+# source.type = "parquet" | "huggingface" | "local"
+# POURQUOI parquet : vos deux corpus sont déjà sur le disque, à côté du code
+# (trop lourds pour les copier dans le dépôt). Les splits train/test des
+# fichiers sont CONSERVÉS : le test n'est jamais remélangé dans le train.
+# -----------------------------------------------------------------------------
+audio:
+  sample_rate: 16000  # standard Whisper / la plupart des ASR
+  source:
+    type: parquet
+    parquet_sources:
+      - path: data/subset
+        text_column: transcription
+    huggingface_id: null
+    huggingface_split: train
+    local_dir: data/audio
+    metadata_csv: metadata.csv  # colonnes : file, transcription
+  splits:
+    train_ratio: 0.8
+    validation_ratio: 0.1
+    test_ratio: 0.1
+  # Jeu médical séparé : JAMAIS mélangé au train (phrases médicales enregistrées)
+  medical_test_dir: data/subset/medical_test
+  medical_test_metadata: metadata.csv
+  # Sous-échantillonnage : 200 = lecture bornée (CPU / petit GPU), null = corpus entier
+  max_samples: 200
+
+# Paquet portable produit par scripts/prepare_subset.py
+subset:
+  output_dir: data/subset
+  n_train: 210
+  n_test: 90
+  max_clip_bytes: 500000
+  max_total_mb: 190
+
+# -----------------------------------------------------------------------------
+# Module 2 — modèles ASR à évaluer (sans entraînement)
+# POURQUOI une liste : comparer objectivement des checkpoints wolof existants
+# avant de décider s'il faut fine-tuner.
+# -----------------------------------------------------------------------------
+asr:
+  models:
+    - M9and2M/whisper-small-wolof
+    - BuzzASR/wolof
+    - Sunbird/asr-whisper-51-african-languages
+    # Option mémoire T4 : décommenter seulement si la VRAM le permet
+    # - CAYTU/whosper-large-v2
+  eval_batch_size: 1
+  use_fp16: true
+  # langue : ne PAS imposer de code ; on lit la config du modèle (voir asr.py)
+
+# -----------------------------------------------------------------------------
+# Module 3 — fine-tuning Whisper small (optionnel)
+# POURQUOI small : compromis qualité / VRAM T4 16 Go.
+# -----------------------------------------------------------------------------
+finetune:
+  base_model: M9and2M/whisper-small-wolof  # meilleur checkpoint wolof de départ (à confirmer après eval)
+  output_dir: checkpoints/whisper-wolof-ft
+  num_train_epochs: 3
+  max_steps: 50
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 4
+  gradient_accumulation_steps: 8  # batch effectif = 2 * 8 = 16
+  learning_rate: 1.0e-5  # faible pour ne pas écraser les poids wolof
+  warmup_steps: 50
+  fp16: true
+  gradient_checkpointing: true
+  eval_steps: 100
+  save_steps: 100
+  save_total_limit: 3  # limite l'espace Drive / disque Colab
+  logging_steps: 10
+  push_to_hub: false
+  hub_model_id: null  # ex. "votre-compte/faadjou-whisper-wolof"
+
+# -----------------------------------------------------------------------------
+# Module 4 — traduction + LLM + triage
+# -----------------------------------------------------------------------------
+translate:
+  model_id: facebook/nllb-200-distilled-600M
+  src_lang: wol_Latn
+  tgt_lang: fra_Latn
+  max_length: 256
+
+llm:
+  # backend: "local" | "api"
+  # POURQUOI deux backends : démo offline Colab vs API si VRAM insuffisante.
+  backend: local
+  local:
+    # Qwen2.5-1.5B-Instruct : licence Apache-2.0 (vérifiée pour usage concours).
+    # Taille adaptée à T4 en 4-bit ; changer si un autre modèle ouvert est retenu.
+    model_id: Qwen/Qwen2.5-1.5B-Instruct
+    load_in_4bit: true
+    max_new_tokens: 256
+  api:
+    # Clés UNIQUEMENT via variables d'environnement (jamais dans ce fichier)
+    # FAADJOU_LLM_API_URL, FAADJOU_LLM_API_KEY
+    url_env: FAADJOU_LLM_API_URL
+    key_env: FAADJOU_LLM_API_KEY
+    model: null
+
+triage:
+  max_retries: 1  # une seule nouvelle tentative si JSON invalide
+  default_specialite: medecin_generaliste
+  default_urgence: moyenne
+  # Numéro d'urgence à afficher dans les messages (à renseigner pour le Sénégal)
+  emergency_phone: "À RENSEIGNER"  # ex. "15" ou numéro local validé
+
+# -----------------------------------------------------------------------------
+# Module 5 — Sentinelle (climat-santé), données SIMULÉES
+# -----------------------------------------------------------------------------
+sentinelle:
+  zones:
+    - Dakar
+    - Thiès
+    - Saint-Louis
+  symptom_categories:
+    - gastro_intestinal
+    - respiratoire
+    - dermatologique
+    - febrile
+    - autre
+  simulation:
+    start_date: "2024-01-01"
+    months: 12
+    base_daily_rate: 8
+    rain_lag_days: 5  # pic de symptômes X jours après fortes pluies
+    rain_spike_multiplier: 3.0
+    n_injected_spikes: 4
+  detection:
+    rolling_window: 14
+    k_sigma: 2.0
+    min_count_per_zone: 5  # seuil anti-réidentification
+  weather:
+    # Open-Meteo archive — attribution requise (voir weather.py)
+    latitude_longitude:
+      Dakar: [14.7167, -17.4677]
+      Thiès: [14.7886, -16.9260]
+      Saint-Louis: [16.0176, -16.4896]
+
+# -----------------------------------------------------------------------------
+# Module 6 — API démo
+# -----------------------------------------------------------------------------
+api:
+  host: 0.0.0.0
+  port: 8000
+  asr_model: M9and2M/whisper-small-wolof

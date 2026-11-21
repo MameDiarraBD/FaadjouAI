@@ -1,0 +1,20 @@
+{
+  "_commentaire": "Liste d'orientation (PAS de diagnostic). À faire valider par un médecin / collège clinique avant usage réel.",
+  "specialites": [
+    "medecin_generaliste",
+    "urgences",
+    "pediatrie",
+    "gynecologie_obstetrique",
+    "cardiologie",
+    "pneumologie",
+    "gastro_enterologie",
+    "dermatologie",
+    "orl",
+    "ophtalmologie",
+    "neurologie",
+    "psychiatrie",
+    "rhumatologie",
+    "infectiologie",
+    "nephrologie"
+  ]
+}
