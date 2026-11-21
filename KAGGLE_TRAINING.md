@@ -97,6 +97,24 @@ Dans les paramètres du notebook :
 - Ajouter le dataset `faadjou-code`
 - Ajouter le dataset `faadjou-wolof-subset`
 
+## Si PyPI ou Hugging Face dit « ERREUR DNS »
+
+L’erreur signifie que la session Kaggle est sans accès réseau. Dans
+`Notebook options > Internet`, choisissez **On** avant toute exécution.
+Redémarrez la session après activation, puis relancez la cellule d’installation.
+
+Dans Kaggle, vérifiez aussi :
+
+```python
+import socket
+print(socket.gethostbyname("pypi.org"))
+print(socket.gethostbyname("huggingface.co"))
+```
+
+Si ces commandes échouent, ne lancez pas l’entraînement : aucun modèle ni paquet
+ne peut être téléchargé tant que le DNS ne répond pas. Essayez un redémarrage
+de la session avec Internet activé, puis vérifiez à nouveau.
+
 Téléversez ensuite le fichier
 `faadjou-ai/notebooks/kaggle_finetune_whisper.ipynb`,
 ou copiez ses cellules.
