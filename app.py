@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import io
 from datetime import date, time
 from pathlib import Path
 import sys
@@ -20,6 +21,8 @@ from faadjou_ai.sentinelle.detect import daily_counts, detect_alerts, evaluate_d
 from faadjou_ai.sentinelle.simulate import simulate_events
 from faadjou_ai.services import DemoReservationService, DemoSpeechRecognitionService
 from faadjou_ai.triage import run_triage
+from faadjou_ai.asr import load_asr_model, transcribe_array
+from faadjou_ai.translate import WolofToFrenchTranslator
 
 
 class DemoTriageBackend(LLMBackend):
@@ -59,6 +62,22 @@ def get_config():
 
 
 config = get_config()
+
+
+@st.cache_resource(show_spinner="Chargement du modèle Wolof entraîné…")
+def load_deployed_asr():
+    model_path = PROJECT_ROOT / "checkpoints" / "whisper-wolof-ft" / "final"
+    if not model_path.is_dir():
+        return None
+    return load_asr_model(str(model_path), use_fp16=True)
+
+
+@st.cache_resource(show_spinner="Chargement du traducteur Wolof vers français…")
+def load_deployed_translator():
+    try:
+        return WolofToFrenchTranslator.from_config(config)
+    except Exception as exc:
+        return exc
 
 st.set_page_config(
     page_title="Faadjou",
@@ -114,7 +133,45 @@ with wax:
     )
     if audio is not None:
         st.audio(audio)
-        st.caption("Audio capturé localement. La transcription Wolof réelle sera activée avec le modèle entraîné.")
+        deployed_asr = load_deployed_asr()
+        if deployed_asr is None:
+            st.warning("Modèle Wolof entraîné non installé. Téléchargez puis extrayez faadjou_model_ft.zip dans checkpoints/whisper-wolof-ft/final.")
+        else:
+            try:
+                import numpy as np
+                import soundfile as sf
+                import librosa
+
+                audio_array, sample_rate = sf.read(io.BytesIO(audio.getvalue()), dtype="float32")
+                if audio_array.ndim > 1:
+                    audio_array = np.mean(audio_array, axis=1)
+                if sample_rate != 16000:
+                    audio_array = librosa.resample(
+                        audio_array,
+                        orig_sr=sample_rate,
+                        target_sr=16000,
+                    )
+                model, processor, generation_kwargs = deployed_asr
+                wolof_text = transcribe_array(
+                    model,
+                    processor,
+                    audio_array,
+                    sample_rate=16000,
+                    gen_kwargs=generation_kwargs,
+                )
+                st.session_state["wax_wolof_transcription"] = wolof_text
+                st.info("Transcription Wolof obtenue. Traduction vers le français en cours.")
+
+                translator = load_deployed_translator()
+                if isinstance(translator, Exception):
+                    st.warning("wolof à venir — traduction indisponible : " + str(translator))
+                    st.session_state["wax_text"] = ""
+                else:
+                    french_text = translator.translate(wolof_text)
+                    st.session_state["wax_text"] = french_text
+                    st.caption("Transcription Wolof : " + wolof_text)
+            except Exception as exc:
+                st.error("Reconnaissance vocale indisponible : " + str(exc))
     else:
         st.caption("Cliquez sur le bouton rouge pour démarrer, puis utilisez le bouton d’arrêt intégré.")
     st.markdown("</div>", unsafe_allow_html=True)

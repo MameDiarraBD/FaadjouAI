@@ -322,3 +322,20 @@ Voir aussi le guide détaillé : [KAGGLE_TRAINING.md](KAGGLE_TRAINING.md).
 
 Le notebook effectue une évaluation baseline, un essai borné à 50 étapes,
 une évaluation après entraînement et écrit la décision de conservation.
+
+## Déployer le modèle Kaggle obtenu
+
+Après téléchargement complet de `faadjou_model_ft.zip`, vérifiez que Chrome a
+produit un vrai fichier `.zip` terminé à 100 % (pas un `.crdownload`).
+Placez-le à la racine du projet puis lancez :
+
+```powershell
+python scripts\prepare_deployed_model.py faadjou_model_ft.zip
+```
+
+Le script vérifie l’intégrité ZIP, extrait les poids et copie le dossier final
+dans `checkpoints/whisper-wolof-ft/final/`.
+
+Le modèle Kaggle actuel a été mesuré à WER `0.5194` contre `0.7346` pour le
+modèle de base sur 300 exemples. Les détails mesurés sont conservés dans
+`results/asr_finetune_compare.csv` et `MODEL_CARD.md`.
