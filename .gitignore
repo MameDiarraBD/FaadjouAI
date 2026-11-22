@@ -5,7 +5,11 @@ data/**
 !data/**/.gitkeep
 results/**
 !results/.gitkeep
-checkpoints/
+checkpoints/*
+!checkpoints/whisper-wolof-ft/
+checkpoints/whisper-wolof-ft/*
+!checkpoints/whisper-wolof-ft/final/
+!checkpoints/whisper-wolof-ft/final/**
 *.wav
 *.mp3
 *.flac
