@@ -312,6 +312,10 @@ et proposent un repli français explicitement identifié « wolof à venir ».
 
 Voir aussi le guide détaillé : [KAGGLE_TRAINING.md](KAGGLE_TRAINING.md).
 
+Pour le jury : [DOCUMENT_TECHNIQUE.md](DOCUMENT_TECHNIQUE.md) reprend les
+données, la méthode, les métriques mesurées, les limites et le protocole de
+déploiement du modèle ASR.
+
 1. Exécutez `python scripts/prepare_subset.py --config configs/config.yaml`.
 2. Le paquet mélange les deux corpus configurés, conserve les splits test,
    borne la taille et écrit `data/subset/MANIFEST.json`.
