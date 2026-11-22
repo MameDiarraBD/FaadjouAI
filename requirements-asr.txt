@@ -1,0 +1,11 @@
+# Dépendances ASR uniquement pour le lancement local/GPU.
+# Ne pas utiliser ce fichier pour Streamlit Community Cloud.
+
+torch
+transformers==5.20.2
+accelerate>=1.1
+safetensors
+soundfile
+librosa
+huggingface_hub
+datasets

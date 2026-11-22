@@ -14,7 +14,6 @@ from typing import Any
 
 import numpy as np
 import torch
-from datasets import Dataset
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 from faadjou_ai.metrics import compute_cer, compute_wer
@@ -101,7 +100,7 @@ def load_asr_model(
     processor = AutoProcessor.from_pretrained(model_id)
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
         model_id,
-        torch_dtype=dtype,
+        dtype=dtype,
         low_cpu_mem_usage=True,
     )
     model.to(device)
@@ -183,7 +182,7 @@ def build_asr_pipeline(model_id: str, use_fp16: bool = True) -> Any:
     device = 0 if torch.cuda.is_available() else -1
     dtype = torch.float16 if (use_fp16 and device == 0) else torch.float32
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
-        model_id, torch_dtype=dtype, low_cpu_mem_usage=True
+        model_id, dtype=dtype, low_cpu_mem_usage=True
     )
     processor = AutoProcessor.from_pretrained(model_id)
     return pipeline(
@@ -198,7 +197,7 @@ def build_asr_pipeline(model_id: str, use_fp16: bool = True) -> Any:
 
 def evaluate_asr_on_dataset(
     model_id: str,
-    dataset: Dataset,
+    dataset: Any,
     split_name: str,
     batch_size: int = 4,
     use_fp16: bool = True,
