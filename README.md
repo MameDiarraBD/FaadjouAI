@@ -277,20 +277,6 @@ Simulation événements (+ pics après pluie) + Open-Meteo
 - Sessions Colab limitées en temps / disque : utilisez Drive + `save_total_limit`.
 - Licence LLM par défaut : **Qwen2.5-1.5B-Instruct (Apache-2.0)** — revérifier avant soumission si vous changez de modèle.
 
----
-
-## À faire valider par un humain (checklist jury)
-
-- [ ] Liste des **signaux d’alarme** (`rules/red_flags.json`) — marquage *NON VALIDÉE*
-- [ ] Liste des **spécialités** (`rules/specialites.json`)
-- [ ] **Numéro d’urgence** (`triage.emergency_phone` dans la config)
-- [ ] Scénarios cliniques (`tests/scenarios.csv`)
-- [ ] Enregistrements **medical_test**
-- [ ] Choix du meilleur checkpoint ASR après `asr_eval.csv`
-- [ ] Décision de conservation du modèle fine-tuné (`asr_finetune_decision.txt`)
-
----
-
 ## Licence / éthique
 
 Usage concours / démonstration. Pas un dispositif médical certifié.  
@@ -306,51 +292,3 @@ Météo : **Open-Meteo** (https://open-meteo.com/).
 Les dépendances lourdes ASR/Kaggle ne sont pas installées au démarrage Cloud.
 L'application démarre en mode démo tant que
 `checkpoints/whisper-wolof-ft/final/` n'est pas présent dans le dépôt.
-
-## Lancer la démo Streamlit
-
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
-
-L’application mobile d’abord présente trois espaces : Faadjou Wax (démo d’orientation),
-Sentinelle (simulation sanitaire), et Rendez-vous (praticiens fictifs, sans paiement).
-Le Wolof n’est pas généré par le prototype : les zones audio affichent `TODO_WOLOF`
-et proposent un repli français explicitement identifié « wolof à venir ».
-
-## Préparer les modèles Wolof sur Kaggle
-
-Voir aussi le guide détaillé : [KAGGLE_TRAINING.md](KAGGLE_TRAINING.md).
-
-Pour le jury : [DOCUMENT_TECHNIQUE.md](DOCUMENT_TECHNIQUE.md) reprend les
-données, la méthode, les métriques mesurées, les limites et le protocole de
-déploiement du modèle ASR.
-
-1. Exécutez `python scripts/prepare_subset.py --config configs/config.yaml`.
-2. Le paquet mélange les deux corpus configurés, conserve les splits test,
-   borne la taille et écrit `data/subset/MANIFEST.json`.
-3. Téléversez `faadjou-ai` et `data/subset` comme datasets Kaggle séparés.
-4. Lancez [le notebook Kaggle](/notebooks/kaggle_finetune_whisper.ipynb).
-5. Téléchargez `faadjou-wolof-model.zip`, puis placez le modèle dans `checkpoints/`
-   avant branchement à l’application.
-
-Le notebook effectue une évaluation baseline, un essai borné à 50 étapes,
-une évaluation après entraînement et écrit la décision de conservation.
-
-## Déployer le modèle Kaggle obtenu
-
-Après téléchargement complet de `faadjou_model_ft.zip`, vérifiez que Chrome a
-produit un vrai fichier `.zip` terminé à 100 % (pas un `.crdownload`).
-Placez-le à la racine du projet puis lancez :
-
-```powershell
-python scripts\prepare_deployed_model.py faadjou_model_ft.zip
-```
-
-Le script vérifie l’intégrité ZIP, extrait les poids et copie le dossier final
-dans `checkpoints/whisper-wolof-ft/final/`.
-
-Le modèle Kaggle actuel a été mesuré à WER `0.5194` contre `0.7346` pour le
-modèle de base sur 300 exemples. Les détails mesurés sont conservés dans
-`results/asr_finetune_compare.csv` et `MODEL_CARD.md`.
