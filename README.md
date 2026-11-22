@@ -296,6 +296,17 @@ Simulation événements (+ pics après pluie) + Open-Meteo
 Usage concours / démonstration. Pas un dispositif médical certifié.  
 Météo : **Open-Meteo** (https://open-meteo.com/).
 
+## Déploiement Streamlit Community Cloud
+
+- Dépôt : `MameDiarraBD/FaadjouAI`
+- Branche : `master`
+- Fichier principal : `app.py`
+- Fichier dépendances : `requirements.txt`
+
+Les dépendances lourdes ASR/Kaggle ne sont pas installées au démarrage Cloud.
+L'application démarre en mode démo tant que
+`checkpoints/whisper-wolof-ft/final/` n'est pas présent dans le dépôt.
+
 ## Lancer la démo Streamlit
 
 ```bash

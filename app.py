@@ -21,8 +21,6 @@ from faadjou_ai.sentinelle.detect import daily_counts, detect_alerts, evaluate_d
 from faadjou_ai.sentinelle.simulate import simulate_events
 from faadjou_ai.services import DemoReservationService, DemoSpeechRecognitionService
 from faadjou_ai.triage import run_triage
-from faadjou_ai.asr import load_asr_model, transcribe_array
-from faadjou_ai.translate import WolofToFrenchTranslator
 
 
 class DemoTriageBackend(LLMBackend):
@@ -69,12 +67,17 @@ def load_deployed_asr():
     model_path = PROJECT_ROOT / "checkpoints" / "whisper-wolof-ft" / "final"
     if not model_path.is_dir():
         return None
-    return load_asr_model(str(model_path), use_fp16=True)
+    try:
+        from faadjou_ai.asr import load_asr_model
+        return load_asr_model(str(model_path), use_fp16=True)
+    except Exception as exc:
+        return exc
 
 
 @st.cache_resource(show_spinner="Chargement du traducteur Wolof vers français…")
 def load_deployed_translator():
     try:
+        from faadjou_ai.translate import WolofToFrenchTranslator
         return WolofToFrenchTranslator.from_config(config)
     except Exception as exc:
         return exc
@@ -136,11 +139,14 @@ with wax:
         deployed_asr = load_deployed_asr()
         if deployed_asr is None:
             st.warning("Modèle Wolof entraîné non installé. Téléchargez puis extrayez faadjou_model_ft.zip dans checkpoints/whisper-wolof-ft/final.")
+        elif isinstance(deployed_asr, Exception):
+            st.warning("Modèle Wolof entraîné indisponible : " + str(deployed_asr))
         else:
             try:
                 import numpy as np
                 import soundfile as sf
                 import librosa
+                from faadjou_ai.asr import transcribe_array
 
                 audio_array, sample_rate = sf.read(io.BytesIO(audio.getvalue()), dtype="float32")
                 if audio_array.ndim > 1:
